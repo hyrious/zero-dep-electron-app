@@ -1,0 +1,8 @@
+{
+  "name": "zero-dep-electron-app",
+  "type": "module",
+  "main": "main.ts",
+  "scripts": {
+    "install": "node build/install.ts"
+  }
+}
