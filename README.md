@@ -6,7 +6,7 @@
 2. Run `npm install` to fetch types for better DX (optional, can also use `bun run --bun install`)
 3. Run `electron .` to give it a try
 
-### Guide without Node.js or Bun
+### Guide without Node.js or Bun (only one Electron)
 
 1. Install Electron to global scope, for example download one from [GitHub releases](https://github.com/electron/electron/releases)
 2. Set a shell command alias named `node` as `ELECTRON_RUN_AS_NODE=1 electron`\
@@ -21,10 +21,13 @@ which enables it to run TypeScript files too. For front-end files, we can regist
 a new file protocol and intercept local resources to transpile TypeScript files,
 using [`module.stripTypeScriptTypes`](https://nodejs.org/api/module.html#modulestriptypescripttypescode-options).
 
-The only one file not in TypeScript is the preload script. It must be a normal js file.
+The only one file on the disk not in TypeScript is the preload script. It must be a normal js file.
+We can transpile one and write to the js file when start electron.
 
 Type checking and code formatting should be directly handled by your code editors.
 For example you can enable these options in your VS Code (there's a more complicated [one](https://github.com/hyrious/dotfiles/blob/main/.vscode/settings.json)):
+
+<details><summary>VS Code settings.json</summary>
 
 ```jsonc
 "files.insertFinalNewline": true,
@@ -42,6 +45,19 @@ For example you can enable these options in your VS Code (there's a more complic
   "editor.formatOnSave": true
 },
 ```
+
+</details>
+
+### Caveats
+
+- Code style is more strict.
+
+  Since we are not using any other TypeScript transpiler/bundler tools.
+  We have to write TypeScript in the style of `erasableSyntaxOnly` mode in both frontend and backend.
+
+  This does not mean we can not use any frontend libraries: We can intercept any web requests
+  from the main process and serve correct ESM files. We could even make Vite happen through the
+  custom protocol in Electron.
 
 ## License
 
