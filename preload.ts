@@ -1,7 +1,8 @@
 // This file is *not* in commonjs, it just happens to have a require function.
 // This file runs in the renderer process (i.e. in the browser) and is wrapped in an IIFE by Electron.
 // Things you can require: https://www.electronjs.org/docs/latest/tutorial/sandbox#preload-scripts
-const { webUtils, ipcRenderer, contextBridge }: typeof Electron.CrossProcessExports = require('electron');
+// Do not import anything from outside this file! We do not have a bundler so this file should be self-contained.
+const { webUtils, ipcRenderer, contextBridge }: typeof import('electron') = require('electron');
 
 contextBridge.exposeInMainWorld('electron', {
 

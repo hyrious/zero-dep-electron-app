@@ -1,5 +1,7 @@
 # Zero-dep Electron App
 
+Write full TypeScript support Electron app with 0 kB node_modules.
+
 ## Setup
 
 1. Install Node.js 22+, then `npm i -g electron` (this repo contains no Electron binary)
@@ -11,7 +13,7 @@
 1. Install Electron to global scope, for example download one from [GitHub releases](https://github.com/electron/electron/releases)
 2. Set a shell command alias named `node` as `ELECTRON_RUN_AS_NODE=1 electron`\
    Windows users can use `build\node.cmd`, for example, `build\node …`
-3. Run `node build/install.ts` (Windows `build\node build\install.ts`) to fetch types for better DX
+3. Run `node build/install.ts` (Windows `build\node build\install.ts`) to fetch types for better DX (optional)
 4. Run `electron .` to give it a try
 
 ## How

@@ -33,7 +33,7 @@ async function onReady() {
       method: request.method,
       headers: request.headers
     });
-    if (fsPath.endsWith('.ts') && response.headers.get('content-type') === 'video/vnd.dlna.mpeg-tts') {
+    if (fsPath.endsWith('.ts')) {
       const body = await response.text();
       const transformedBody = stripTypeScriptTypes(body);
       return new Response(transformedBody, {
