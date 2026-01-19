@@ -28,12 +28,12 @@ async function onReady() {
 
   protocol.handle('app-file', async request => {
     const url = request.url.replace('app-file://app', 'file://');
-    const fsPath = fileURLToPath(url).replace(/^\\\\([c-z])\\/, (_, drive) => `${drive.toUpperCase()}:\\`);
-    const response = await net.fetch(pathToFileURL(fsPath).toString(), {
+    const fsPath = fileURLToPath(url);
+    const response = await net.fetch(url, {
       method: request.method,
       headers: request.headers
     });
-    if (fsPath.endsWith('.ts')) {
+    if (response.ok && fsPath.endsWith('.ts')) {
       const body = await response.text();
       const transformedBody = stripTypeScriptTypes(body);
       return new Response(transformedBody, {
@@ -54,9 +54,17 @@ async function onReady() {
   // For macOS dock icon
   app.dock?.setIcon(join(import.meta.dirname, 'icon.png'));
 
+  const windowStatePath = join(app.getPath('userData'), 'window-state.json');
+  let windowState: { x: number; y: number; width: number; height: number; };
+  try {
+    windowState = JSON.parse(await readFile(windowStatePath, 'utf8'));
+  } catch {
+    windowState = { x: 200, y: 400, width: 544, height: 416 };
+  }
+
   mainWindow = new BrowserWindow({
     autoHideMenuBar: true,
-    x: 100, y: 300, width: 544, height: 416,
+    ...windowState,
     icon: join(import.meta.dirname, 'icon.png'),
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#1F1F1F' : '#FFFFFF',
     webPreferences: {
@@ -68,6 +76,15 @@ async function onReady() {
         monospace: 'Cascadia Mono'
       }
     }
+  });
+
+  let saveWindowStateTimeout: NodeJS.Timeout | undefined;
+  mainWindow.on('moved', () => {
+    clearTimeout(saveWindowStateTimeout);
+    saveWindowStateTimeout = setTimeout(() => {
+      windowState = mainWindow.getBounds();
+      writeFile(windowStatePath, JSON.stringify(windowState));
+    }, 500);
   });
 
   mainWindow.webContents.setWindowOpenHandler(details => {
@@ -100,21 +117,18 @@ async function onReady() {
       document.body.appendChild(document.createElement('style')).textContent = '${style}';
       document.querySelectorAll('.platform-windows').forEach(el => el.classList.remove('platform-windows'));
       addStyleToAutoComplete();
-      new MutationObserver((mutationList, observer) => {
-        for (const mutation of mutationList) {
-          if (mutation.type === 'childList') {
-            for (let i = 0; i < mutation.addedNodes.length; i++) {
-              const item = mutation.addedNodes[i];
-              if (item.classList.contains('editor-tooltip-host')) {
-                addStyleToAutoComplete();
-              }
+      new MutationObserver(mutationList => {
+        for (const mutation of mutationList) if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach(item => {
+            if (item.classList.contains('editor-tooltip-host')) {
+              addStyleToAutoComplete();
             }
-          }
+          });
         }
       }).observe(document.body, { childList: true });
       function addStyleToAutoComplete() {
         document.querySelectorAll('.editor-tooltip-host').forEach(element => {
-          if (element.shadowRoot.querySelectorAll('[data-key="overridden-dev-tools-font"]').length === 0) {
+          if (!element.shadowRoot.querySelector('[data-key="overridden-dev-tools-font"]')) {
             const overriddenStyle = element.shadowRoot.appendChild(document.createElement('style'));
             overriddenStyle.setAttribute('data-key', 'overridden-dev-tools-font');
             overriddenStyle.textContent = '.cm-tooltip-autocomplete ul[role=listbox] {font-family: ${monospaceFont} !important;}';

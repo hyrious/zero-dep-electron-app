@@ -3,6 +3,7 @@
     "strict": true,
     "module": "nodenext",
     "noEmit": true,
+    "skipLibCheck": true,
     "erasableSyntaxOnly": true,
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
